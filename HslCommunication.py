@@ -3481,6 +3481,19 @@ class SiemensS7Net(NetworkDeviceBase):
 	def WriteByte( self, address, value ):
 		'''向PLC中写入byte数据，返回值说明'''
 		return self.Write( address, [value] )
+	
+	#西门子s7热启动
+	def BuildHotStartCommand(self):
+		buffer = bytearray(1)
+		buffer[0] = 0x4d
+		_PLCCommand = bytearray(37 + len(buffer))
+		_PLCCommand = bytearray([0x03,0x00,0x00,0x25,0x02,0xf0,0x80,0x32,0x01,0x00,0x00,0x0c,0x00,0x00,0x14,0x00,0x00,0x28,0x00,0x00,0x00,0x00,0x00,0x00,0xfd,0x00,0x00,0x09,0x50,0x5f,0x50,0x52,0x4f,0x47,0x52,0x41])
+		_PLCCommand[37:] = buffer
+		return OperateResult.CreateSuccessResult(_PLCCommand)
+	def HotStart(self):
+		command = self.BuildHotStartCommand()
+		return self.__WriteBase( command.Content )
+	
 class SiemensFetchWriteNet(NetworkDeviceBase):
 	'''使用了Fetch/Write协议来和西门子进行通讯，该种方法需要在PLC侧进行一些配置'''
 	def __init__( self, ipAddress = '127.0.0.1', port = 1000 ):
